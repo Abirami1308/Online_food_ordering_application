@@ -6,8 +6,18 @@ import org.springframework.stereotype.Service;
 
 import com.examly.springapp.model.FoodOrder;
 import com.examly.springapp.repository.FoodOrderRepository;
-
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@Builder
 @Service
+
 public class FoodOrderService {
 
    
