@@ -6,47 +6,55 @@ import org.springframework.stereotype.Service;
 
 import com.examly.springapp.model.FoodOrder;
 import com.examly.springapp.repository.FoodOrderRepository;
-
-import lombok.RequiredArgsConstructor;
-
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@Builder
 @Service
-@RequiredArgsConstructor
+
 public class FoodOrderService {
 
+   
     private FoodOrderRepository foodOrderRepository;
+
+    public FoodOrder saveOrder(FoodOrder order) {
+        return foodOrderRepository.save(order);
+    }
 
     public List<FoodOrder> getAllOrders() {
         return foodOrderRepository.findAll();
     }
 
     public FoodOrder getOrderById(Long id) {
-        return foodOrderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order with ID " + id + " not found."));
+        return foodOrderRepository.findById(id).orElse(null);
     }
 
-    public FoodOrder saveOrder(FoodOrder order) {
-        return foodOrderRepository.save(order);
-    }
+    public FoodOrder updateOrder(Long id, FoodOrder updatedOrder) {
 
-    public FoodOrder updateOrder(Long id, FoodOrder request) {
-        FoodOrder order = foodOrderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order with ID " + id + " not found."));
+        FoodOrder order = foodOrderRepository.findById(id).orElse(null);
 
-        order.setRestaurantName(request.getRestaurantName());
-        order.setCuisineType(request.getCuisineType());
-        order.setMenuItemName(request.getMenuItemName());
-        order.setMenuItemDescription(request.getMenuItemDescription());
-        order.setMenuItemPrice(request.getMenuItemPrice());
-        order.setQuantity(request.getQuantity());
-        order.setOrderStatus(request.getOrderStatus());
+        if (order == null) {
+            return null;
+        }
+
+        order.setRestaurantName(updatedOrder.getRestaurantName());
+        order.setCuisineType(updatedOrder.getCuisineType());
+        order.setMenuItemName(updatedOrder.getMenuItemName());
+        order.setMenuItemDescription(updatedOrder.getMenuItemDescription());
+        order.setMenuItemPrice(updatedOrder.getMenuItemPrice());
+        order.setQuantity(updatedOrder.getQuantity());
+        order.setOrderStatus(updatedOrder.getOrderStatus());
 
         return foodOrderRepository.save(order);
     }
 
     public void deleteOrder(Long id) {
-        if (!foodOrderRepository.existsById(id)) {
-            throw new RuntimeException("Order with ID " + id + " not found.");
-        }
         foodOrderRepository.deleteById(id);
     }
 }
