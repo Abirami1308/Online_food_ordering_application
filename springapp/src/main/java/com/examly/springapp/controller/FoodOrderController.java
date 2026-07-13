@@ -11,58 +11,99 @@ import com.examly.springapp.service.FoodOrderService;
 
 import lombok.RequiredArgsConstructor;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Food Orders", description = "Food Order APIs")
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/orders")
 @RequiredArgsConstructor
 public class FoodOrderController {
 
-    private  FoodOrderService foodOrderService ;
+    private final FoodOrderService foodOrderService;
 
+    @Operation(
+            summary = "Get all food orders",
+            description = "Returns all food orders from the database")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Orders retrieved successfully")
+    })
     @GetMapping
     public ResponseEntity<List<FoodOrder>> getAllOrders() {
         List<FoodOrder> orders = foodOrderService.getAllOrders();
-        return new ResponseEntity<>(orders, HttpStatus.OK);
+        return ResponseEntity.ok(orders);
     }
 
+    @Operation(
+            summary = "Get food order by ID",
+            description = "Returns a food order using its ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order found"),
+            @ApiResponse(responseCode = "404", description = "Order not found")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<FoodOrder> getOrderById(@PathVariable Long id) {
         try {
             FoodOrder order = foodOrderService.getOrderById(id);
-            return new ResponseEntity<>(order, HttpStatus.OK);
+            return ResponseEntity.ok(order);
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.notFound().build();
         }
     }
 
+    @Operation(
+            summary = "Create a food order",
+            description = "Creates a new food order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request body")
+    })
+    
     @PostMapping
-    public ResponseEntity<FoodOrder> createOrder(@RequestBody FoodOrder order) {
+    public ResponseEntity<FoodOrder> createOrder(@RequestBody(required = false) FoodOrder order) {
 
         if (order == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest().build();
         }
 
         FoodOrder savedOrder = foodOrderService.saveOrder(order);
-        return new ResponseEntity<>(savedOrder, HttpStatus.CREATED);
+        return ResponseEntity.ok(savedOrder);
     }
 
+    @Operation(
+            summary = "Update a food order",
+            description = "Updates an existing food order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Order not found")
+    })
     @PutMapping("/{id}")
     public ResponseEntity<FoodOrder> updateOrder(@PathVariable Long id,
                                                  @RequestBody FoodOrder order) {
         try {
             FoodOrder updatedOrder = foodOrderService.updateOrder(id, order);
-            return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
+            return ResponseEntity.ok(updatedOrder);
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.notFound().build();
         }
     }
 
+    @Operation(
+            summary = "Delete a food order",
+            description = "Deletes a food order by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Order not found")
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
         try {
             foodOrderService.deleteOrder(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.notFound().build();
         }
     }
 }

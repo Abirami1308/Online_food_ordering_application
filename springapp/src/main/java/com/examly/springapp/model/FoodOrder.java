@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import io.swagger.v3.oas.annotations.media.Schema;
 @Getter
 @Setter
 @AllArgsConstructor
@@ -17,17 +18,32 @@ import lombok.Setter;
 @Builder
 @Entity
 @Table(name = "orders")
+@Schema(description = "Represents a food order")
+
 public class FoodOrder {
+@Schema(description = "Unique identifier of the food order", example = "1")
+@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+private Long id;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@Schema(description = "Name of the restaurant", example = "A2B")
+private String restaurantName;
 
-    private String restaurantName;
-    private String cuisineType;
-    private String menuItemName;
-    private String menuItemDescription;
-    private Double menuItemPrice;
-    private Integer quantity;
-    private String orderStatus;
+@Schema(description = "Type of cuisine served", example = "South Indian")
+private String cuisineType;
+
+@Schema(description = "Name of the menu item ordered", example = "Masala Dosa")
+private String menuItemName;
+
+@Schema(description = "Description of the menu item", example = "Crispy dosa served with potato masala, chutney and sambar")
+private String menuItemDescription;
+
+@Schema(description = "Price of one menu item", example = "120.50")
+private Double menuItemPrice;
+
+@Schema(description = "Quantity ordered", example = "2")
+private Integer quantity;
+
+@Schema(description = "Current status of the order", example = "Pending")
+private String orderStatus;
 }
