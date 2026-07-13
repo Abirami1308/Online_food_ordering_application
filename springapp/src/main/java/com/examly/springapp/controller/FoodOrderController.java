@@ -1,4 +1,3 @@
-
 package com.examly.springapp.controller;
 
 import java.util.List;
@@ -17,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class FoodOrderController {
 
-    private final FoodOrderService foodOrderService;
+    private  FoodOrderService foodOrderService ;
 
     @GetMapping
     public ResponseEntity<List<FoodOrder>> getAllOrders() {
