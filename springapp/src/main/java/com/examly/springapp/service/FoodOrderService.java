@@ -21,9 +21,13 @@ import lombok.Setter;
 public class FoodOrderService {
 
    
+    @org.springframework.beans.factory.annotation.Autowired
     private FoodOrderRepository foodOrderRepository;
 
     public FoodOrder saveOrder(FoodOrder order) {
+        if (order != null) {
+            order.setId(null);
+        }
         return foodOrderRepository.save(order);
     }
 

@@ -1,9 +1,10 @@
 package com.examly.springapp.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,17 +12,19 @@ import org.springframework.context.annotation.Configuration;
 public class SwaggerConfig {
 
     @Bean
-    public OpenAPI foodOrderingAPI() {
-
+    public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Online Food Ordering API")
-                        .description("REST API documentation for Online Food Ordering System")
-                        .version("1.0")
-                        .contact(new Contact()
-                                .name("Examly")
-                                .email("support@examly.com"))
-                        .license(new License()
-                                .name("Apache 2.0")));
+                        .title("Online Food Ordering System API")
+                        .version("1.0.0")
+                        .description("API Documentation for the Online Food Ordering System with JWT security."))
+                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+                .components(new Components()
+                        .addSecuritySchemes("bearerAuth", new SecurityScheme()
+                                .name("bearerAuth")
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")
+                                .in(SecurityScheme.In.HEADER)));
     }
 }
