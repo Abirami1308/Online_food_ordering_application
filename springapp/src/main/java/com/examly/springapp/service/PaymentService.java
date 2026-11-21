@@ -19,7 +19,7 @@ import lombok.Setter;
 public class PaymentService {
 
     @org.springframework.beans.factory.annotation.Autowired
-    private PaymentRepository paymentRepository;
+ private PaymentRepository paymentRepository;
 
     public Payment savePayment(Payment payment) {
         if (payment != null) {

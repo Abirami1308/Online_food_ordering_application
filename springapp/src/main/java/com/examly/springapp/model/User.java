@@ -43,4 +43,7 @@ public class User {
 
     @Schema(description = "Role of the user", example = "CUSTOMER")
     private String role;
+
+    @Schema(description = "Associated restaurant ID for RESTAURANT role users", example = "1")
+    private Long restaurantId;
 }

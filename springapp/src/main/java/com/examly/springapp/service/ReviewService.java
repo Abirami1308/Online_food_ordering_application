@@ -42,9 +42,11 @@ public class ReviewService {
             return null;
         }
         review.setUserId(updatedReview.getUserId());
+        review.setOrderId(updatedReview.getOrderId());
         review.setRestaurantId(updatedReview.getRestaurantId());
         review.setRating(updatedReview.getRating());
         review.setComment(updatedReview.getComment());
+        review.setReviewDate(updatedReview.getReviewDate());
         return reviewRepository.save(review);
     }
 

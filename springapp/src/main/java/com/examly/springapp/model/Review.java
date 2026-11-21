@@ -29,6 +29,9 @@ public class Review {
     @Schema(description = "User ID who wrote the review", example = "1")
     private Long userId;
 
+    @Schema(description = "Order ID associated with the review", example = "12")
+    private Long orderId;
+
     @Schema(description = "Restaurant ID being reviewed", example = "2")
     private Long restaurantId;
 
@@ -37,4 +40,7 @@ public class Review {
 
     @Schema(description = "Comment by the user", example = "Great food and fast delivery!")
     private String comment;
+
+    @Schema(description = "Timestamp when the review was submitted")
+    private java.time.LocalDateTime reviewDate;
 }

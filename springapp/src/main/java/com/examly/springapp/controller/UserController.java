@@ -1,6 +1,7 @@
 package com.examly.springapp.controller;
 
 import java.util.List;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.examly.springapp.model.User;
@@ -11,8 +12,6 @@ import com.examly.springapp.dto.LoginResponse;
 import com.examly.springapp.dto.RegisterRequest;
 import com.examly.springapp.dto.AuthResponse;
 import com.examly.springapp.exception.UserAlreadyExistsException;
-import com.examly.springapp.exception.InvalidCredentialsException;
-import com.examly.springapp.exception.ResourceNotFoundException;
 import com.examly.springapp.util.JwtUtil;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,6 +33,25 @@ public class UserController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
 
+    private User getAuthenticatedUser() {
+        org.springframework.security.core.Authentication authentication = 
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+        String username = authentication.getName();
+        return userRepository.findByUsername(username).orElse(null);
+    }
+
+    @Operation(summary = "Get current authenticated user profile", description = "Returns profile details of the current logged-in user")
+    @GetMapping("/me")
+    public ResponseEntity<User> getCurrentUser() {
+        User user = getAuthenticatedUser();
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(user);
+    }
 
     @Operation(summary = "Get all users", description = "Returns all users from the database")
     @ApiResponses(value = {
@@ -96,7 +114,7 @@ public class UserController {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .phoneNumber(request.getPhoneNumber())
                 .address(request.getAddress())
-                .role(request.getRole() != null ? request.getRole() : "CUSTOMER")
+                .role("CUSTOMER") // Public registration always defaults to CUSTOMER
                 .build();
 
         userRepository.save(user);
@@ -113,22 +131,21 @@ public class UserController {
                 .token(token)
                 .username(user.getUsername())
                 .role(user.getRole())
+                .restaurantId(user.getRestaurantId())
                 .message("User registered successfully")
                 .build());
     }
 
     @Operation(summary = "Login user", description = "Authenticates a user and returns a JWT token")
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         User user = userRepository.findByUsername(request.getUsername()).orElse(null);
         if (user == null) {
-            user = User.builder()
-                    .username(request.getUsername())
-                    .email(request.getUsername() + "@example.com")
-                    .password(passwordEncoder.encode(request.getPassword()))
-                    .role("CUSTOMER")
-                    .build();
-            userRepository.save(user);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password.");
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password.");
         }
 
         org.springframework.security.core.userdetails.UserDetails userDetails = 
@@ -143,6 +160,7 @@ public class UserController {
                 .token(token)
                 .username(user.getUsername())
                 .role(user.getRole())
+                .restaurantId(user.getRestaurantId())
                 .build());
     }
 
@@ -154,8 +172,25 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
         try {
-            if (user.getPassword() != null && !user.getPassword().startsWith("$2a$")) {
+            User authenticatedUser = getAuthenticatedUser();
+            if (authenticatedUser == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            boolean isAdmin = authenticatedUser.getRole() != null && authenticatedUser.getRole().toUpperCase().equals("ADMIN");
+            if (!isAdmin) {
+                if (!authenticatedUser.getId().equals(id)) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                }
+                user.setRole(authenticatedUser.getRole());
+                user.setRestaurantId(authenticatedUser.getRestaurantId());
+            }
+            if (user.getPassword() != null && !user.getPassword().startsWith("$2a$") && !user.getPassword().isEmpty()) {
                 user.setPassword(passwordEncoder.encode(user.getPassword()));
+            } else if (user.getPassword() == null || user.getPassword().isEmpty()) {
+                User existing = userService.getUserById(id);
+                if (existing != null) {
+                    user.setPassword(existing.getPassword());
+                }
             }
             User updatedUser = userService.updateUser(id, user);
             if (updatedUser == null) {
@@ -165,6 +200,30 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PostMapping("/api/admin/restaurant-users")
+    public ResponseEntity<?> createRestaurantUser(@RequestBody com.examly.springapp.dto.RestaurantUserRequest request) {
+        if (request.getUsername() == null || request.getEmail() == null || request.getPassword() == null || request.getRestaurantId() == null) {
+            return ResponseEntity.badRequest().body("Username, email, password, and restaurantId are required.");
+        }
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new UserAlreadyExistsException("Username is already taken");
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new UserAlreadyExistsException("Email is already in use");
+        }
+
+        User user = User.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role("RESTAURANT")
+                .restaurantId(request.getRestaurantId())
+                .build();
+
+        User savedUser = userRepository.save(user);
+        return ResponseEntity.ok(savedUser);
     }
 
     @Operation(summary = "Delete a user", description = "Deletes a user by ID")

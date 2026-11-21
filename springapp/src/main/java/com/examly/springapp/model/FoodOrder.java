@@ -26,6 +26,9 @@ public class FoodOrder {
 @GeneratedValue(strategy = GenerationType.IDENTITY)
 private Long id;
 
+@Schema(description = "User ID who placed the order", example = "1")
+private Long userId;
+
 @Schema(description = "Name of the restaurant", example = "A2B")
 private String restaurantName;
 
@@ -46,4 +49,10 @@ private Integer quantity;
 
 @Schema(description = "Current status of the order", example = "Pending")
 private String orderStatus;
+
+@Schema(description = "Payment mode selected", example = "UPI")
+private String paymentMode;
+
+@Schema(description = "Restaurant ID associated with the order", example = "1")
+private Long restaurantId;
 }

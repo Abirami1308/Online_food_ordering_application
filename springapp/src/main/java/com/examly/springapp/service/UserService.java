@@ -47,6 +47,7 @@ public class UserService {
         user.setPhoneNumber(updatedUser.getPhoneNumber());
         user.setAddress(updatedUser.getAddress());
         user.setRole(updatedUser.getRole());
+        user.setRestaurantId(updatedUser.getRestaurantId());
         return userRepository.save(user);
     }
 

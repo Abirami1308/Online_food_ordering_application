@@ -40,4 +40,7 @@ public class Delivery {
 
     @Schema(description = "Estimated delivery time in minutes", example = "30")
     private Integer estimatedTimeMinutes;
+
+    @Schema(description = "Customer phone number", example = "9876543210")
+    private String phoneNumber;
 }

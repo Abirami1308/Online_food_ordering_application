@@ -46,6 +46,7 @@ public class DeliveryService {
         delivery.setDeliveryAddress(updatedDelivery.getDeliveryAddress());
         delivery.setDeliveryStatus(updatedDelivery.getDeliveryStatus());
         delivery.setEstimatedTimeMinutes(updatedDelivery.getEstimatedTimeMinutes());
+        delivery.setPhoneNumber(updatedDelivery.getPhoneNumber());
         return deliveryRepository.save(delivery);
     }
 

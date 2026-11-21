@@ -31,3 +31,16 @@ build/
 
 ### VS Code ###
 .vscode/
+# React frontend
+reactapp/node_modules/
+reactapp/.env
+reactapp/.env.*
+!reactapp/.env.example
+reactapp/build/
+
+# Generated ZIP files
+reactapp.zip
+springapp.zip
+
+# Logs
+*.log

@@ -18,6 +18,30 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class MenuController {
 
     private final MenuService menuService;
+    private final com.examly.springapp.repository.UserRepository userRepository;
+
+    private com.examly.springapp.model.User getAuthenticatedUser() {
+        org.springframework.security.core.Authentication authentication = 
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+        String username = authentication.getName();
+        return userRepository.findByUsername(username).orElse(null);
+    }
+
+    private boolean isAuthorized(Long targetRestaurantId) {
+        com.examly.springapp.model.User user = getAuthenticatedUser();
+        if (user == null) return false;
+        String role = user.getRole();
+        if ("ADMIN".equalsIgnoreCase(role)) {
+            return true;
+        }
+        if ("RESTAURANT".equalsIgnoreCase(role)) {
+            return targetRestaurantId != null && targetRestaurantId.equals(user.getRestaurantId());
+        }
+        return false;
+    }
 
     @Operation(summary = "Get all menus", description = "Returns all menus from the database")
     @ApiResponses(value = {
@@ -53,9 +77,12 @@ public class MenuController {
             @ApiResponse(responseCode = "400", description = "Invalid request body")
     })
     @PostMapping
-    public ResponseEntity<Menu> createMenu(@RequestBody(required = false) Menu menu) {
+    public ResponseEntity<?> createMenu(@RequestBody(required = false) Menu menu) {
         if (menu == null) {
             return ResponseEntity.badRequest().build();
+        }
+        if (!isAuthorized(menu.getRestaurantId())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body("Access denied to create menu for this restaurant.");
         }
         Menu savedMenu = menuService.saveMenu(menu);
         return ResponseEntity.ok(savedMenu);
@@ -67,12 +94,16 @@ public class MenuController {
             @ApiResponse(responseCode = "404", description = "Menu not found")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<Menu> updateMenu(@PathVariable Long id, @RequestBody Menu menu) {
+    public ResponseEntity<?> updateMenu(@PathVariable Long id, @RequestBody Menu menu) {
         try {
-            Menu updatedMenu = menuService.updateMenu(id, menu);
-            if (updatedMenu == null) {
+            Menu existing = menuService.getMenuById(id);
+            if (existing == null) {
                 return ResponseEntity.notFound().build();
             }
+            if (!isAuthorized(existing.getRestaurantId()) || (menu != null && !isAuthorized(menu.getRestaurantId()))) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body("Access denied to update menu for this restaurant.");
+            }
+            Menu updatedMenu = menuService.updateMenu(id, menu);
             return ResponseEntity.ok(updatedMenu);
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
@@ -85,8 +116,15 @@ public class MenuController {
             @ApiResponse(responseCode = "404", description = "Menu not found")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMenu(@PathVariable Long id) {
+    public ResponseEntity<?> deleteMenu(@PathVariable Long id) {
         try {
+            Menu existing = menuService.getMenuById(id);
+            if (existing == null) {
+                return ResponseEntity.notFound().build();
+            }
+            if (!isAuthorized(existing.getRestaurantId())) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body("Access denied to delete menu for this restaurant.");
+            }
             menuService.deleteMenu(id);
             return ResponseEntity.ok().build();
         } catch (Exception e) {

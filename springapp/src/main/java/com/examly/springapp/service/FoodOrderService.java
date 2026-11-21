@@ -47,6 +47,7 @@ public class FoodOrderService {
             return null;
         }
 
+        order.setUserId(updatedOrder.getUserId());
         order.setRestaurantName(updatedOrder.getRestaurantName());
         order.setCuisineType(updatedOrder.getCuisineType());
         order.setMenuItemName(updatedOrder.getMenuItemName());
@@ -54,6 +55,7 @@ public class FoodOrderService {
         order.setMenuItemPrice(updatedOrder.getMenuItemPrice());
         order.setQuantity(updatedOrder.getQuantity());
         order.setOrderStatus(updatedOrder.getOrderStatus());
+        order.setPaymentMode(updatedOrder.getPaymentMode());
 
         return foodOrderRepository.save(order);
     }

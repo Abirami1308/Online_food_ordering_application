@@ -4,6 +4,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.examly.springapp.model.FoodOrder;
 
-public interface FoodOrderRepository extends JpaRepository<FoodOrder, Long> {
+import java.util.List;
 
+public interface FoodOrderRepository extends JpaRepository<FoodOrder, Long> {
+    List<FoodOrder> findByUserId(Long userId);
+    List<FoodOrder> findByRestaurantId(Long restaurantId);
 }
