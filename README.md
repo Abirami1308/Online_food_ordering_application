@@ -1,2 +1,14 @@
-# 3f8d6bac-f34e-464b-9c47-d6c7f7391419-fe095181-bce7-45f1-b790-ad63b7148c30
-Repository for Teams Project code and project management
+# Online Food Ordering Application
+
+A full-stack online food ordering application built using React, Spring Boot, and MySQL.
+
+## Features
+
+- User registration and login
+- Restaurant browsing and menu management
+- Shopping cart and checkout
+- Order management
+- Delivery tracking
+- Reviews and ratings
+- Admin dashboard
+- Restaurant dashboard
